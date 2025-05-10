@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifndef max
 #define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
@@ -131,6 +132,12 @@ void freeScoreMatrix(mtype **scoreMatrix, int sizeB) {
 }
 
 int main(int argc, char ** argv) {
+
+	clock_t start, end;
+	double cpu_time_used;
+
+	start = clock();  // Início da medição
+
 	// sequence pointers for both sequences
 	char *seqA, *seqB;
 
@@ -138,8 +145,10 @@ int main(int argc, char ** argv) {
 	int sizeA, sizeB;
 
 	//read both sequences
-	seqA = read_seq("fileA.in");
-	seqB = read_seq("fileB.in");
+	// seqA = read_seq("fileA.in");
+	// seqB = read_seq("fileB.in");
+	seqA = read_seq("fileA_G.in");
+	seqB = read_seq("fileB_G.in");
 
 	//find out sizes
 	sizeA = strlen(seqA);
@@ -158,7 +167,7 @@ int main(int argc, char ** argv) {
 	 for debug purposes, define DEBUGMATRIX. */
 	#ifdef DEBUGMATRIX
 	printMatrix(seqA, seqB, scoreMatrix, sizeA, sizeB);
-	printf("A sequência mais longa é: a w h e e");
+	// printf("A sequência mais longa é: a w h e e");
 	#endif
 
 	//print score
@@ -167,5 +176,13 @@ int main(int argc, char ** argv) {
 	//free score matrix
 	freeScoreMatrix(scoreMatrix, sizeB);
 
+	end = clock();  // Fim da medição
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+	printf("Tempo de execução: %.6f segundos\n", cpu_time_used);
+
 	return EXIT_SUCCESS;
 }
+
+// abbbbbbbbbbccccccccccdefggggggggggabbbbbbbbbbccccccccccdefggggggggggabbbbbbbbbbccccccccccdefgggggggggg
+// axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxdfaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxdfaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxdf
