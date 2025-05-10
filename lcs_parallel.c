@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <omp.h>
+#include <math.h>
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 typedef unsigned short mtype; // unsigned short = 2 bytes
@@ -53,21 +55,36 @@ void initScoreMatrix(mtype **matrix, int sizeA, int sizeB) {
 
 int LCS_parallel(mtype **matrix, int sizeA, int sizeB, char *seqA, char *seqB) {
     int i, j, d;
-
+    int count = 0;
+    // int total = 0;
     for (d = 2; d <= sizeA + sizeB; d++) {
         // Diagonal d: i + j = d
+        
+        int i_start = max(1, d - sizeA);
+        int i_end   = min(sizeB, d - 1);
+
         #pragma omp parallel for private(i,j) shared(matrix, seqA, seqB)
-        for (i = 1; i <= sizeB; i++) {
+        for (i = i_start; i <= i_end; i++) {
             j = d - i;
-            if (j >= 1 && j <= sizeA) {
-                if (seqA[j - 1] == seqB[i - 1]) {
-                    matrix[i][j] = matrix[i - 1][j - 1] + 1;
-                } else {
-                    matrix[i][j] = max(matrix[i - 1][j], matrix[i][j - 1]);
-                }
+            if (seqA[j - 1] == seqB[i - 1]) {
+                matrix[i][j] = matrix[i - 1][j - 1] + 1;
+            } else {
+                matrix[i][j] = max(matrix[i - 1][j], matrix[i][j - 1]);
             }
         }
     }
+    //     A Z B
+    //   0 0 0 0  
+    // A 0 1 1 1
+    // B 0 1 1 2
+    // X 0 1 1 2
+
+    //     A  Z  B
+    //   0 0  0  0  
+    // A 0 D1 D2 D3
+    // B 0 D2 D3 D4
+    // X 0 D3 D4 D5
+ 
     return matrix[sizeB][sizeA];
 }
 
@@ -78,15 +95,20 @@ void freeScoreMatrix(mtype **matrix, int sizeB) {
 }
 
 int main() {
-    char *seqA = read_seq("fileA.in");
-    char *seqB = read_seq("fileB.in");
+    // char *seqA = read_seq("fileA.in");
+    // char *seqB = read_seq("fileB.in");
+    char *seqA = read_seq("fileA_G.in");
+	char *seqB = read_seq("fileB_G.in");
     int sizeA = strlen(seqA);
     int sizeB = strlen(seqB);
+    // printf("Size A: %d, Size B: %d", sizeA, sizeB);
+    // printf("\n %d \n", max(4,4));
 
     mtype **matrix = allocateScoreMatrix(sizeA, sizeB);
     initScoreMatrix(matrix, sizeA, sizeB);
 
     mtype score = LCS_parallel(matrix, sizeA, sizeB, seqA, seqB);
+    // printf("Total de iterações: %d\n", (sizeA + sizeB - 2) * sizeB);
     printf("\nLCS length: %d\n", score);
 
     freeScoreMatrix(matrix, sizeB);
